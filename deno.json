@@ -1,0 +1,15 @@
+{
+  "imports": {
+    "@std/dotenv": "jsr:@std/dotenv@^0.225.3",
+    "hono": "jsr:@hono/hono@^4.7.6"
+  },
+  "tasks": {
+    "compile": "mkdir -p ./bin && deno compile --allow-env --allow-net --allow-read --allow-sys --allow-write -o ./bin/docker-control main.ts",
+    "start": "deno run --allow-env --allow-net --allow-read --allow-sys --allow-write main.ts",
+    "dev": "deno run --allow-env --allow-net --allow-read --allow-sys --allow-write --watch main.ts"
+  },
+  "compilerOptions": {
+    "jsx": "precompile",
+    "jsxImportSource": "hono/jsx"
+  }
+}
