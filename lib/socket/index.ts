@@ -3,13 +3,14 @@ export async function querySocket<T>(
   socket: string,
   path: string,
   method = "GET",
-  options: { expectEmptyResponse?: boolean; rawResponse?: boolean } = {}
+  options: { expectEmptyResponse?: boolean; rawResponse?: boolean } = {},
 ): Promise<T> {
   // Connect to the Unix socket
   const conn = await Deno.connect({ path: socket, transport: "unix" });
 
   // Prepare HTTP request to the Docker API
-  const request = `${method} /v1.41${path} HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n`;
+  const request =
+    `${method} /v1.41${path} HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n`;
 
   // Send the request
   const encoder = new TextEncoder();
@@ -77,13 +78,12 @@ export async function querySocket<T>(
     }
 
     // Find the start of valid JSON
-    const jsonStartIndex =
-      body.indexOf("{") >= 0
-        ? Math.min(
-            body.indexOf("{"),
-            body.indexOf("[") >= 0 ? body.indexOf("[") : Infinity
-          )
-        : body.indexOf("[");
+    const jsonStartIndex = body.indexOf("{") >= 0
+      ? Math.min(
+        body.indexOf("{"),
+        body.indexOf("[") >= 0 ? body.indexOf("[") : Infinity,
+      )
+      : body.indexOf("[");
 
     if (jsonStartIndex >= 0) {
       body = body.substring(jsonStartIndex);

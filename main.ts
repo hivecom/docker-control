@@ -11,14 +11,14 @@ import { DockerService } from "./lib/docker/index.ts";
 // Load environment variables
 if (!Deno.env.get("DOCKER_CONTROL_TOKEN")) {
   console.error(
-    "Error: DOCKER_CONTROL_TOKEN is not set in the environment variables."
+    "Error: DOCKER_CONTROL_TOKEN is not set in the environment variables.",
   );
   Deno.exit(1);
 }
 
 // Check if the socket exists.
-const socketPath =
-  Deno.env.get("DOCKER_CONTROL_SOCKET") || "/var/run/docker.sock";
+const socketPath = Deno.env.get("DOCKER_CONTROL_SOCKET") ||
+  "/var/run/docker.sock";
 try {
   await Deno.stat(socketPath);
 } catch (err) {
@@ -42,11 +42,11 @@ app.use(
     origin: "*",
     allowMethods: ["GET"],
     allowHeaders: ["Authorization", "Content-Type"],
-  })
+  }),
 );
 
 // Apply custom middlewares
-app.use("/*", middlewareAuth, middlewareRateLimit);
+app.use("/*", middlewareRateLimit, middlewareAuth);
 
 // Endpoint to list running Docker containers
 app.get("/containers", async (c) => {
@@ -95,14 +95,14 @@ app.post("/control/:association/:value/start", async (c) => {
       default:
         return c.json(
           { error: "Invalid association parameter. Use 'id' or 'name'." },
-          400
+          400,
         );
     }
 
     if (!container) {
       return c.json(
         { error: `Container with ${association} '${value}' not found` },
-        404
+        404,
       );
     }
 
@@ -112,7 +112,7 @@ app.post("/control/:association/:value/start", async (c) => {
   } catch (err) {
     console.error(
       `Error starting container with ${association} '${value}':`,
-      err
+      err,
     );
     if (err instanceof Error && err.message.includes("not found")) {
       return c.json({ error: err.message }, 404);
@@ -137,14 +137,14 @@ app.post("/control/:association/:value/stop", async (c) => {
       default:
         return c.json(
           { error: "Invalid association parameter. Use 'id' or 'name'." },
-          400
+          400,
         );
     }
 
     if (!container) {
       return c.json(
         { error: `Container with ${association} '${value}' not found` },
-        404
+        404,
       );
     }
 
@@ -154,7 +154,7 @@ app.post("/control/:association/:value/stop", async (c) => {
   } catch (err) {
     console.error(
       `Error stopping container with ${association} '${value}':`,
-      err
+      err,
     );
     if (err instanceof Error && err.message.includes("not found")) {
       return c.json({ error: err.message }, 404);
@@ -179,14 +179,14 @@ app.post("/control/:association/:value/restart", async (c) => {
       default:
         return c.json(
           { error: "Invalid association parameter. Use 'id' or 'name'." },
-          400
+          400,
         );
     }
 
     if (!container) {
       return c.json(
         { error: `Container with ${association} '${value}' not found` },
-        404
+        404,
       );
     }
 
@@ -196,7 +196,7 @@ app.post("/control/:association/:value/restart", async (c) => {
   } catch (err) {
     console.error(
       `Error restarting container with ${association} '${value}':`,
-      err
+      err,
     );
     if (err instanceof Error && err.message.includes("not found")) {
       return c.json({ error: err.message }, 404);
@@ -225,14 +225,14 @@ app.get("/control/:association/:value/logs", async (c) => {
       default:
         return c.json(
           { error: "Invalid association parameter. Use 'id' or 'name'." },
-          400
+          400,
         );
     }
 
     if (!container) {
       return c.json(
         { error: `Container with ${association} '${value}' not found` },
-        404
+        404,
       );
     }
 
@@ -242,7 +242,7 @@ app.get("/control/:association/:value/logs", async (c) => {
   } catch (err) {
     console.error(
       `Error getting logs for container with ${association} '${value}':`,
-      err
+      err,
     );
     if (err instanceof Error && err.message.includes("not found")) {
       return c.json({ error: err.message }, 404);
@@ -267,14 +267,14 @@ app.get("/control/:association/:value/status", async (c) => {
       default:
         return c.json(
           { error: "Invalid association parameter. Use 'id' or 'name'." },
-          400
+          400,
         );
     }
 
     if (!container) {
       return c.json(
         { error: `Container with ${association} '${value}' not found` },
-        404
+        404,
       );
     }
 
@@ -284,7 +284,7 @@ app.get("/control/:association/:value/status", async (c) => {
   } catch (err) {
     console.error(
       `Error getting status for container with ${association} '${value}':`,
-      err
+      err,
     );
     if (err instanceof Error && err.message.includes("not found")) {
       return c.json({ error: err.message }, 404);
@@ -303,9 +303,9 @@ Deno.serve(
     port: Number(DOCKER_CONTROL_PORT),
     onListen: () => {
       console.log(
-        `Docker Control is running at http://127.0.0.1:${DOCKER_CONTROL_PORT}`
+        `Docker Control is running at http://127.0.0.1:${DOCKER_CONTROL_PORT}`,
       );
     },
   },
-  app.fetch
+  app.fetch,
 );
