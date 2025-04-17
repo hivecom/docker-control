@@ -35,4 +35,4 @@ systemctl daemon-reload
 echo "Docker Control API setup completed."
 echo "Please edit /etc/docker-control/environment to set your secure token."
 echo "Then start the service with: systemctl start docker-control"
-echo "Enable it on boot with: systemctl enable docker-control"
+echo "Enable it on boot with: systemctl enable --now docker-control"
