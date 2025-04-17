@@ -1,0 +1,30 @@
+[Unit]
+# General service description
+Description=Docker Control API service
+After=network.target docker.service
+
+[Service]
+# Service is non forking
+Type=simple
+
+# Environment variables
+EnvironmentFile=/etc/docker-control/environment
+Environment=DOCKER_CONTROL_PORT=54320
+
+# Execution on start of service
+ExecStart=/usr/local/bin/docker-control
+
+# Restart policy
+Restart=on-failure
+RestartSec=5s
+
+# Security settings
+User=docker-control
+Group=docker
+
+# Set the working directory
+WorkingDirectory=/opt/docker-control/
+
+[Install]
+# Target file for service management
+WantedBy=multi-user.target
