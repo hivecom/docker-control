@@ -5,8 +5,7 @@ export class DockerService {
   private socketPath: string;
 
   constructor(socketPath?: string) {
-    this.socketPath =
-      socketPath ||
+    this.socketPath = socketPath ||
       Deno.env.get("DOCKER_CONTROL_SOCKET") ||
       "/var/run/docker.sock";
   }
@@ -17,7 +16,7 @@ export class DockerService {
   async getAllContainers(): Promise<DockerContainer[]> {
     return await querySocket<DockerContainer[]>(
       this.socketPath,
-      "/containers/json?all=true"
+      "/containers/json?all=true",
     );
   }
 
@@ -33,7 +32,7 @@ export class DockerService {
    * Find a container by name
    */
   async findContainerByName(
-    name: string
+    name: string,
   ): Promise<DockerContainer | undefined> {
     const containers = await this.getAllContainers();
     return containers.find((container) =>
@@ -47,7 +46,7 @@ export class DockerService {
   async findContainerById(id: string): Promise<DockerContainer | undefined> {
     const containers = await this.getAllContainers();
     return containers.find(
-      (container) => container.Id === id || container.Id.startsWith(id)
+      (container) => container.Id === id || container.Id.startsWith(id),
     );
   }
 
@@ -100,7 +99,7 @@ export class DockerService {
    * Start a container by ID
    */
   async startContainer(
-    id: string
+    id: string,
   ): Promise<{ success: boolean; message: string }> {
     const container = await this.findContainerById(id);
 
@@ -116,10 +115,12 @@ export class DockerService {
     const name = container.Names[0].slice(1);
     return {
       success: true,
-      message: `Container '${name}' (${id.substring(
-        0,
-        12
-      )}) started successfully`,
+      message: `Container '${name}' (${
+        id.substring(
+          0,
+          12,
+        )
+      }) started successfully`,
     };
   }
 
@@ -127,7 +128,7 @@ export class DockerService {
    * Stop a container by ID
    */
   async stopContainer(
-    id: string
+    id: string,
   ): Promise<{ success: boolean; message: string }> {
     const container = await this.findContainerById(id);
 
@@ -143,10 +144,12 @@ export class DockerService {
     const name = container.Names[0].slice(1);
     return {
       success: true,
-      message: `Container '${name}' (${id.substring(
-        0,
-        12
-      )}) stopped successfully`,
+      message: `Container '${name}' (${
+        id.substring(
+          0,
+          12,
+        )
+      }) stopped successfully`,
     };
   }
 
@@ -154,7 +157,7 @@ export class DockerService {
    * Restart a container by ID
    */
   async restartContainer(
-    id: string
+    id: string,
   ): Promise<{ success: boolean; message: string }> {
     const container = await this.findContainerById(id);
 
@@ -170,10 +173,12 @@ export class DockerService {
     const name = container.Names[0].slice(1);
     return {
       success: true,
-      message: `Container '${name}' (${id.substring(
-        0,
-        12
-      )}) restarted successfully`,
+      message: `Container '${name}' (${
+        id.substring(
+          0,
+          12,
+        )
+      }) restarted successfully`,
     };
   }
 
@@ -202,7 +207,7 @@ export class DockerService {
       this.socketPath,
       `/containers/${id}/logs?${queryParams.toString()}`,
       "GET",
-      { rawResponse: true }
+      { rawResponse: true },
     );
 
     return { logs };
