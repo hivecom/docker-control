@@ -28,16 +28,20 @@ Make sure you set the appropriate `DOCKER_CONTROL_KEY` in your environment varia
 
 All API requests require the `Authorization` header containing the token matching the `DOCKER_CONTROL_TOKEN` environment variable.
 
-| Method | Endpoint | Description | Parameters |
-|--------|----------|-------------|------------|
-| GET | `/containers` | Returns information about all Docker containers | None |
-| GET | `/names` | Returns a list of all container names | None |
-| GET | `/status` | Returns status information for all containers | None |
-| POST | `/control/:association/:value/start` | Start a container | `:association`: `id` or `name`  `:value`: Container ID or name |
-| POST | `/control/:association/:value/stop` | Stop a container | `:association`: `id` or `name`  `:value`: Container ID or name |
-| POST | `/control/:association/:value/restart` | Restart a container | `:association`: `id` or `name`  `:value`: Container ID or name |
-| GET | `/control/:association/:value/logs` | Get container logs | `:association`: `id` or `name`  `:value`: Container ID or name  `?tail=<number>`: Optional query parameter to limit log lines |
-| GET | `/control/:association/:value/status` | Get status for a specific container | `:association`: `id` or `name`  `:value`: Container ID or name |
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/containers` | Returns information about all Docker containers |
+| GET | `/names` | Returns a list of all container names |
+| GET | `/status` | Returns status information for all containers |
+| POST | `/control/:association/:value/start` | Start a container |
+| POST | `/control/:association/:value/stop` | Stop a container |
+| POST | `/control/:association/:value/restart` | Restart a container |
+| GET | `/control/:association/:value/logs` | Get container logs* |
+| GET | `/control/:association/:value/status` | Get status for a specific container |
+
+Specify `:association` as `id` or `name` and `:value` to perform an action on a given container ID or name.  
+
+The `logs` endpoint will return **all** lines of logs from the container. You can specify a limit of lines starting from the end by adding a query parameter `tail=<number>` to the URL. For example, `/control/id/123/logs?tail=50` will return the last 50 lines of logs from the container with ID `123`.
 
 ## Compiling
 
@@ -91,9 +95,6 @@ The repository includes systemd configuration files for running docker-control a
 > We're using `control.[host].hivecom.net` as an example for a server in the Hivecom network. You should replace this with your own domain name.
 
 To expose the API through NGINX with HTTPS, you can use the provided NGINX configuration file.
-
->[!INFO]
-> This configuration includes snippets from [neko-config](https://github.com/catlinman/neko-config/tree/master/nginx) for SSL and security headers. Make sure to adjust the paths to your SSL certificates and keys.
 
 1. Copy the NGINX configuration file to your NGINX sites directory:
 

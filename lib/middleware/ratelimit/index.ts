@@ -1,7 +1,7 @@
 import { Context, Next } from "hono";
 import { getConnInfo } from "hono/deno";
 
-const RATE_LIMIT = 12; // Max requests per minute (One every 5 seconds)
+const RATE_LIMIT = 60; // Max requests per minute one every second.
 const RATE_PERIOD = 60 * 1000; // 1 minute in milliseconds
 const CLEANUP_INTERVAL = 10 * 60 * 1000; // Clean up the map every 10 minutes
 
