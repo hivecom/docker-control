@@ -95,7 +95,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ steps.release-version.outputs.version }}
-          name: Release v${{ steps.release-version.outputs.version }}
+          name: v${{ steps.release-version.outputs.version }}
           body: |
             ## Docker Control v${{ steps.release-version.outputs.version }}
             

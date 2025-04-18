@@ -2,21 +2,7 @@
 
 Hivecom network wide Docker container orchestration and metrics API using Hono and Deno.
 
-## Setup
-
-Make sure Deno is installed on your machine. You can follow the instructions [here](https://deno.land/manual/getting_started/installation) to install Deno.
-
-Once Deno is installed, you can clone this repository and install the dependencies.
-
-```bash
-deno install
-```
-
-## Running the API
-
-### Using the CLI
-
-Docker Control now includes a command-line interface (CLI) with various options:
+## Using Docker Control
 
 ```bash
 # Start the API server (default command)
@@ -64,6 +50,16 @@ All API requests require the `Authorization` header containing the token matchin
 Specify `:association` as `id` or `name` and `:value` to perform an action on a given container ID or name.  
 
 The `logs` endpoint will return **all** lines of logs from the container. You can specify a limit of lines starting from the end by adding a query parameter `tail=<number>` to the URL. For example, `/control/id/123/logs?tail=50` will return the last 50 lines of logs from the container with ID `123`.
+
+## Development Setup
+
+Make sure Deno is installed on your machine. You can follow the instructions [here](https://deno.land/manual/getting_started/installation) to install Deno.
+
+Once Deno is installed, you can clone this repository and install the dependencies.
+
+```bash
+deno install
+```
 
 ## Compiling
 
