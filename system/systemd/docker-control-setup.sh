@@ -5,6 +5,7 @@
 # Create required directories
 mkdir -p /opt/docker-control
 mkdir -p /etc/docker-control
+mkdir -p /var/log/docker-control
 
 # Create environment file
 cat > /etc/docker-control/environment << EOF
@@ -21,6 +22,10 @@ if ! id "docker-control" &>/dev/null; then
     useradd -r -s /bin/false -d /opt/docker-control docker-control
     usermod -aG docker docker-control
 fi
+
+# Set permissions for log directory
+chown -R docker-control:docker /var/log/docker-control
+chmod 755 /var/log/docker-control
 
 # Copy binary to the proper location
 cp ./bin/docker-control /usr/local/bin/

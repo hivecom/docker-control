@@ -1,0 +1,127 @@
+name: Build and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (leave empty to use current version in version.ts)'
+        required: false
+        type: string
+      release_notes:
+        description: 'Release notes'
+        required: false
+        type: string
+        default: 'See commit history for changes.'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Needed to create releases
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full git history for proper versioning
+      
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      
+      - name: Get current version
+        id: get-version
+        run: |
+          CURRENT_VERSION=$(grep -oP 'export const VERSION = "\K[^"]+' version.ts)
+          echo "current_version=$CURRENT_VERSION" >> $GITHUB_OUTPUT
+      
+      - name: Set custom version if provided
+        if: "${{ inputs.version != '' }}"
+        run: |
+          # Update version.ts with the provided version
+          sed -i "s/export const VERSION = \"${{ steps.get-version.outputs.current_version }}\"/export const VERSION = \"${{ inputs.version }}\"/" version.ts
+          echo "Using custom version: ${{ inputs.version }}"
+      
+      - name: Build application
+        run: |
+          # Run the build script
+          deno run --allow-env --allow-read --allow-write --allow-run scripts/build.ts
+          
+          # Create tarball for Linux
+          tar -czvf docker-control-linux.tar.gz -C bin docker-control
+          
+          # Display info
+          echo "Build completed successfully."
+      
+      - name: Determine version for release
+        id: release-version
+        run: |
+          RELEASE_VERSION="${{ inputs.version }}"
+          if [ -z "$RELEASE_VERSION" ]; then
+            RELEASE_VERSION="${{ steps.get-version.outputs.current_version }}"
+          fi
+          echo "version=$RELEASE_VERSION" >> $GITHUB_OUTPUT
+      
+      - name: Generate changelog
+        id: changelog
+        if: "${{ inputs.release_notes == 'See commit history for changes.' }}"
+        run: |
+          # Generate changelog from git commits since last tag
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -z "$LAST_TAG" ]; then
+            # If no tags exist, get all commits
+            CHANGELOG=$(git log --pretty=format:"* %s (%h)" | head -15)
+          else
+            # Get commits since last tag
+            CHANGELOG=$(git log --pretty=format:"* %s (%h)" $LAST_TAG..HEAD | head -15)
+          fi
+          
+          # If there are more than 15 commits, indicate there are more
+          COMMIT_COUNT=$(git log --pretty=format:"* %s" $LAST_TAG..HEAD | wc -l)
+          if [ $COMMIT_COUNT -gt 15 ]; then
+            CHANGELOG="$CHANGELOG
+            
+            And $(($COMMIT_COUNT - 15)) more commits."
+          fi
+          
+          # Create a delimited changelog for GitHub Actions
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGELOG" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+      
+      - name: Create Release
+        id: create-release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.release-version.outputs.version }}
+          name: Release v${{ steps.release-version.outputs.version }}
+          body: |
+            ## Docker Control v${{ steps.release-version.outputs.version }}
+            
+            ${{ inputs.release_notes != 'See commit history for changes.' && inputs.release_notes || steps.changelog.outputs.changelog }}
+            
+            ### Installation
+            
+            Download the appropriate tarball for your platform and extract it:
+            
+            ```bash
+            tar -xzf docker-control-linux.tar.gz
+            ```
+            
+            Then move the binary to a location in your PATH or use the provided system setup script:
+            
+            ```bash
+            sudo ./system/systemd/docker-control-setup.sh
+            ```
+            
+            See the README for more detailed instructions.
+          files: |
+            docker-control-linux.tar.gz
+          draft: false
+          prerelease: false
+      
+      - name: Upload release assets
+        run: |
+          echo "Release v${{ steps.release-version.outputs.version }} created successfully!"
+          echo "URL: ${{ steps.create-release.outputs.url }}"

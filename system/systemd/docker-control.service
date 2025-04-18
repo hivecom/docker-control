@@ -11,8 +11,8 @@ Type=simple
 EnvironmentFile=/etc/docker-control/environment
 Environment=DOCKER_CONTROL_PORT=54320
 
-# Execution on start of service
-ExecStart=/usr/local/bin/docker-control
+# Execution on start of service with silent mode and log file
+ExecStart=/usr/local/bin/docker-control --silent --log-file /var/log/docker-control/app.log
 
 # Restart policy
 Restart=on-failure

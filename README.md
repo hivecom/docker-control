@@ -14,10 +14,32 @@ deno install
 
 ## Running the API
 
-This is the most straightforward part.
+### Using the CLI
+
+Docker Control now includes a command-line interface (CLI) with various options:
 
 ```bash
+# Start the API server (default command)
 deno task start
+
+# Show CLI help
+deno task start --help
+
+# Display version
+deno task start --version
+# or
+deno task start -v
+
+# Run in silent mode (no console output)
+deno task start --silent
+# or
+deno task start -s
+
+# Output logs to a file
+deno task start --log-file /path/to/logfile.log
+
+# Combine options
+deno task start --silent --log-file /var/log/docker-control.log
 ```
 
 From here, you can access the API at `http://localhost:${DOCKER_CONTROL_PORT}` (default: `54320`).
@@ -52,6 +74,27 @@ deno task compile
 ```
 
 This will create a single executable file `docker-control` in the `./bin` directory. You can then run this file to start the API.
+
+The compiled binary includes all the CLI features:
+
+```bash
+# Show help
+./bin/docker-control --help
+
+# Display version
+./bin/docker-control --version
+
+# Run in silent mode with log output
+./bin/docker-control --silent --log-file /var/log/docker-control.log
+```
+
+### Version Information
+
+You can override this by setting the `DOCKER_CONTROL_VERSION` environment variable before building:
+
+```bash
+DOCKER_CONTROL_VERSION=1.2.3 deno task compile
+```
 
 ## Deployment
 
@@ -88,6 +131,8 @@ The repository includes systemd configuration files for running docker-control a
     ```bash
     sudo systemctl status docker-control
     ```
+
+> **Note:** When running as a service, Docker Control runs in silent mode with log output directed to `/var/log/docker-control/app.log`.
 
 ### With NGINX
 
