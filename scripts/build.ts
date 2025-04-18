@@ -10,7 +10,7 @@ const getVersion = () => {
     return envVersion;
   }
 
-  return "UNKNOWN";
+  return "DEV";
 };
 
 // Build the application with the version baked in
