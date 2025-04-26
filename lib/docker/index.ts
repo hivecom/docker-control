@@ -59,12 +59,13 @@ export class DockerService {
       name: string;
       health: string;
       status: string;
-      startTimestamp: number | null;
+      started: number | null;
     }>
   > {
     const containers = await this.getAllContainers();
+    const results = [];
 
-    return containers.map((container) => {
+    for (const container of containers) {
       // Extract container name (removing leading slash)
       const name = container.Names[0].slice(1);
 
@@ -75,24 +76,45 @@ export class DockerService {
       // Default to container state if health check not configured
       const health = container.State;
 
-      // Try to determine start timestamp from container state
-      let startTimestamp: number | null = null;
+      // Try to determine start timestamp from container inspect API
+      let started: number | null = null;
 
-      // Get more detailed information about the container
+      // Get more detailed information about the container if it's running
       if (container.State === "running") {
-        // For running containers, use Created as a fallback
-        // In a real implementation, we would get this from container inspect
-        startTimestamp = container.Created * 1000; // Convert to milliseconds
+        try {
+          // Get detailed container information from Docker API
+          const containerDetails = await querySocket<{
+            State?: {
+              StartedAt?: string;
+            };
+          }>(this.socketPath, `/containers/${container.Id}/json`);
+
+          // Extract start timestamp from container details
+          if (containerDetails.State && containerDetails.State.StartedAt) {
+            const startedAt = containerDetails.State.StartedAt;
+            if (startedAt && startedAt !== "0001-01-01T00:00:00Z") {
+              started = new Date(startedAt).getTime();
+            }
+          }
+        } catch (error) {
+          // If there's an error getting detailed info, fallback to Created timestamp
+          console.error(
+            `Error getting details for container ${container.Id}: ${error}`,
+          );
+          started = container.Created;
+        }
       }
 
-      return {
+      results.push({
         id: container.Id,
         name,
         health,
         status,
-        startTimestamp,
-      };
-    });
+        started,
+      });
+    }
+
+    return results;
   }
 
   /**

@@ -4,31 +4,28 @@ Hivecom network wide Docker container orchestration and metrics API using Hono a
 
 ## Using Docker Control
 
-```bash
-# Start the API server (default command)
-deno task start
+```plaintext
+> $ deno task start --help
+Usage:   docker-control
+Version: [Version]
 
-# Show CLI help
-deno task start --help
+Description:
 
-# Display version
-deno task start --version
-# or
-deno task start -v
+  Hivecom Docker container orchestration and metrics API
 
-# Run in silent mode (no console output)
-deno task start --silent
-# or
-deno task start -s
+Options:
 
-# Output logs to a file
-deno task start --log-file /path/to/logfile.log
+  -h, --help              - Show this help.                            
+  -V, --version           - Show the version number for this program.  
+  -s, --silent            - Run in silent mode (no console output)     
+  -l, --log-file  <path>  - Log output to the specified file           
 
-# Combine options
-deno task start --silent --log-file /var/log/docker-control.log
+Commands:
+
+  serve  - Start the Docker control API server
 ```
 
-From here, you can access the API at `http://localhost:${DOCKER_CONTROL_PORT}` (default: `54320`).
+Start it in development with `deno task dev` (essentially `deno run --watch main.ts`), you can access the API at `http://localhost:${DOCKER_CONTROL_PORT}` (default: `54320`).
 
 Make sure you set the appropriate `DOCKER_CONTROL_KEY` in your environment variables. This is the key that will be used to authenticate requests to the API.
 
