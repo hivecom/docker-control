@@ -299,6 +299,9 @@ async function startServer(options: {
     const tailParam = c.req.query("tail");
     const tail = tailParam ? parseInt(tailParam, 10) : undefined;
 
+    // Get the optional since parameter (time duration like "1h")
+    const since = c.req.query("since");
+
     try {
       let container;
       switch (association) {
@@ -323,7 +326,11 @@ async function startServer(options: {
       }
 
       // Use the container ID for the operation
-      const result = await dockerService.getContainerLogs(container.Id, tail);
+      const result = await dockerService.getContainerLogs(
+        container.Id,
+        tail,
+        since,
+      );
       return c.text(result);
     } catch (err) {
       await logger.error(

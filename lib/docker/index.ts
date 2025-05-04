@@ -206,8 +206,15 @@ export class DockerService {
 
   /**
    * Get logs for a container by ID
+   * @param id Container ID
+   * @param tail Optional number of lines to return from the end
+   * @param since Optional time duration (e.g. "1h", "30m", "12h") to get logs since
    */
-  async getContainerLogs(id: string, tail?: number): Promise<string> {
+  async getContainerLogs(
+    id: string,
+    tail?: number,
+    since?: string,
+  ): Promise<string> {
     const container = await this.findContainerById(id);
 
     if (!container) {
@@ -222,6 +229,34 @@ export class DockerService {
 
     if (tail !== undefined) {
       queryParams.append("tail", tail.toString());
+    }
+
+    // Handle 'since' parameter if provided (e.g., "1h", "30m", "12h")
+    if (since) {
+      // Parse the duration string
+      const match = since.match(/^(\d+)([hms])$/);
+      if (match) {
+        const [, value, unit] = match;
+        const numValue = parseInt(value, 10);
+
+        // Convert to seconds based on the unit
+        let seconds = 0;
+        switch (unit) {
+          case "h":
+            seconds = numValue * 60 * 60;
+            break;
+          case "m":
+            seconds = numValue * 60;
+            break;
+          case "s":
+            seconds = numValue;
+            break;
+        }
+
+        // Docker API expects a Unix timestamp (seconds since epoch)
+        const sinceTimestamp = Math.floor(Date.now() / 1000) - seconds;
+        queryParams.append("since", sinceTimestamp.toString());
+      }
     }
 
     // Get the raw logs as text
