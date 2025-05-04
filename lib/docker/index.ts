@@ -207,7 +207,7 @@ export class DockerService {
   /**
    * Get logs for a container by ID
    */
-  async getContainerLogs(id: string, tail?: number): Promise<{ logs: string }> {
+  async getContainerLogs(id: string, tail?: number): Promise<string> {
     const container = await this.findContainerById(id);
 
     if (!container) {
@@ -232,7 +232,7 @@ export class DockerService {
       { rawResponse: true },
     );
 
-    return { logs };
+    return logs;
   }
 
   /**
