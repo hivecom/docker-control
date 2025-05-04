@@ -324,7 +324,7 @@ async function startServer(options: {
 
       // Use the container ID for the operation
       const result = await dockerService.getContainerLogs(container.Id, tail);
-      return c.json(result);
+      return c.text(result);
     } catch (err) {
       await logger.error(
         `Error getting logs for container with ${association} '${value}': ${err}`,
@@ -332,7 +332,7 @@ async function startServer(options: {
       if (err instanceof Error && err.message.includes("not found")) {
         return c.json({ error: err.message }, 404);
       }
-      return c.json({ error: "Internal Server Error" }, 500);
+      return c.text("Internal Server Error", 500);
     }
   });
 
