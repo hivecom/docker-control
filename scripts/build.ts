@@ -1,6 +1,7 @@
 // build.ts - Handles building the application with version information
 
 import * as path from "@std/path";
+import { VERSION } from "../version.ts";
 
 // Get the version from environment or use date-based versioning
 const getVersion = () => {
@@ -10,7 +11,7 @@ const getVersion = () => {
     return envVersion;
   }
 
-  return "DEV";
+  return VERSION;
 };
 
 // Build the application with the version baked in
