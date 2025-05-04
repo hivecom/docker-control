@@ -299,8 +299,24 @@ async function startServer(options: {
     const tailParam = c.req.query("tail");
     const tail = tailParam ? parseInt(tailParam, 10) : undefined;
 
-    // Get the optional since parameter (time duration like "1h")
+    // Get the optional since parameter (time duration like "1h", "2d")
     const since = c.req.query("since");
+
+    // Get the optional from/to parameters (Unix timestamps)
+    const fromParam = c.req.query("from");
+    const toParam = c.req.query("to");
+
+    // Parse from/to as numbers if provided
+    const from = fromParam ? parseInt(fromParam, 10) : undefined;
+    const to = toParam ? parseInt(toParam, 10) : undefined;
+
+    // Validate that if 'to' is provided, 'from' must also be provided
+    if (toParam && !fromParam) {
+      return c.json(
+        { error: "Parameter 'to' requires 'from' to be provided" },
+        400,
+      );
+    }
 
     try {
       let container;
@@ -330,6 +346,8 @@ async function startServer(options: {
         container.Id,
         tail,
         since,
+        from,
+        to,
       );
       return c.text(result);
     } catch (err) {

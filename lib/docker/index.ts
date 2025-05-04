@@ -208,12 +208,16 @@ export class DockerService {
    * Get logs for a container by ID
    * @param id Container ID
    * @param tail Optional number of lines to return from the end
-   * @param since Optional time duration (e.g. "1h", "30m", "12h") to get logs since
+   * @param since Optional time duration (e.g. "1h", "30m", "12h", "2d") to get logs since
+   * @param from Optional timestamp (Unix seconds) to get logs from
+   * @param to Optional timestamp (Unix seconds) to get logs until (requires from)
    */
   async getContainerLogs(
     id: string,
     tail?: number,
     since?: string,
+    from?: number,
+    to?: number,
   ): Promise<string> {
     const container = await this.findContainerById(id);
 
@@ -231,10 +235,19 @@ export class DockerService {
       queryParams.append("tail", tail.toString());
     }
 
-    // Handle 'since' parameter if provided (e.g., "1h", "30m", "12h")
-    if (since) {
+    // Handle timestamp-based queries (from/to)
+    if (from !== undefined) {
+      // "from" overrides "since" if both are provided
+      queryParams.append("since", from.toString());
+
+      // "to" requires "from" to be provided
+      if (to !== undefined) {
+        queryParams.append("until", to.toString());
+      }
+    } // Handle duration-based query (since)
+    else if (since) {
       // Parse the duration string
-      const match = since.match(/^(\d+)([hms])$/);
+      const match = since.match(/^(\d+)([dhms])$/);
       if (match) {
         const [, value, unit] = match;
         const numValue = parseInt(value, 10);
@@ -242,6 +255,9 @@ export class DockerService {
         // Convert to seconds based on the unit
         let seconds = 0;
         switch (unit) {
+          case "d":
+            seconds = numValue * 24 * 60 * 60;
+            break;
           case "h":
             seconds = numValue * 60 * 60;
             break;

@@ -46,7 +46,18 @@ All API requests require the `Authorization` header containing the token matchin
 
 Specify `:association` as `id` or `name` and `:value` to perform an action on a given container ID or name.  
 
-The `logs` endpoint will return **all** lines of logs from the container. You can specify a limit of lines starting from the end by adding a query parameter `tail=<number>` to the URL. For example, `/control/id/123/logs?tail=50` will return the last 50 lines of logs from the container with ID `123`.
+The `logs` endpoint will return logs from the container and supports the following query parameters:
+
+- `tail=<number>` - Limit the output to the specified number of lines from the end (e.g., `?tail=50`)
+- `since=<duration>` - Get logs since the specified duration from now. Formats:
+  - `<number>d` - days (e.g., `?since=2d` for logs from the last 2 days)
+  - `<number>h` - hours (e.g., `?since=6h` for logs from the last 6 hours)
+  - `<number>m` - minutes (e.g., `?since=30m` for logs from the last 30 minutes)
+  - `<number>s` - seconds (e.g., `?since=90s` for logs from the last 90 seconds)
+- `from=<timestamp>` - Get logs from the specified Unix timestamp in seconds (e.g., `?from=1714842000`)
+- `to=<timestamp>` - Get logs until the specified Unix timestamp in seconds (requires `from` to be provided) (e.g., `?from=1714842000&to=1714845600`)
+
+Note that if both `since` and `from` parameters are provided, the `from` parameter takes precedence.
 
 ## Development Setup
 
