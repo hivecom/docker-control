@@ -1,0 +1,26 @@
+{
+  "lsp": {
+    "deno": {
+      "settings": {
+        "deno": {
+          "enable": true,
+          "config": "./deno.json",
+        },
+      },
+    },
+  },
+  "languages": {
+    "JavaScript": {
+      "language_servers": ["deno"],
+      "formatter": "language_server",
+    },
+    "TypeScript": {
+      "language_servers": ["deno"],
+      "formatter": "language_server",
+    },
+    "TSX": {
+      "language_servers": ["deno"],
+      "formatter": "language_server",
+    },
+  },
+}

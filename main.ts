@@ -11,6 +11,7 @@ import "@std/dotenv/load"; // Automatically load .env file
 import { middlewareRateLimit } from "./lib/middleware/ratelimit/index.ts";
 import { middlewareAuth } from "./lib/middleware/auth/index.ts";
 import { DockerService } from "./lib/docker/index.ts";
+import { queryGameServer } from "./lib/query/index.ts";
 
 // Custom logger that handles silent mode and file logging
 class Logger {
@@ -30,11 +31,10 @@ class Logger {
     // Write to file if specified
     if (this.logFile) {
       try {
-        await Deno.writeTextFile(
-          this.logFile,
-          formattedMessage + "\n",
-          { append: true, create: true },
-        );
+        await Deno.writeTextFile(this.logFile, formattedMessage + "\n", {
+          append: true,
+          create: true,
+        });
       } catch (error) {
         // Only log file errors to console if not in silent mode
         if (!this.silent) {
@@ -87,10 +87,7 @@ function createLogger(options: { silent?: boolean; logFile?: string }) {
 }
 
 // Function to start the server
-async function startServer(options: {
-  silent?: boolean;
-  logFile?: string;
-}) {
+async function startServer(options: { silent?: boolean; logFile?: string }) {
   const logger = createLogger(options);
 
   // Load environment variables
@@ -402,6 +399,57 @@ async function startServer(options: {
     }
   });
 
+  app.get("/query/name/:container", async (c) => {
+    const containerName = c.req.param("container");
+
+    const protocol = c.req.query("protocol");
+    if (!protocol || protocol !== "source") {
+      return c.json(
+        {
+          error:
+            "Missing or unsupported 'protocol' query parameter. Supported: source",
+        },
+        400,
+      );
+    }
+
+    const portParam = c.req.query("port");
+    if (!portParam) {
+      return c.json({ error: "Missing required 'port' query parameter" }, 400);
+    }
+    const port = parseInt(portParam, 10);
+    if (isNaN(port) || port <= 0 || port > 65535) {
+      return c.json({ error: "'port' must be a valid integer (1-65535)" }, 400);
+    }
+
+    try {
+      const container = await dockerService.findContainerByName(containerName);
+      if (!container) {
+        return c.json({ error: `Container '${containerName}' not found` }, 404);
+      }
+
+      if (container.State !== "running") {
+        return c.json(
+          { error: `Container '${containerName}' is not running` },
+          400,
+        );
+      }
+
+      const result = await queryGameServer("source", "127.0.0.1", port);
+      return c.json({
+        success: true,
+        playerCount: result.playerCount,
+        maxPlayers: result.maxPlayers,
+        map: result.map,
+      });
+    } catch (err) {
+      await logger.error(
+        `Error querying game server for container '${containerName}': ${err}`,
+      );
+      return c.json({ success: false, error: "Internal Server Error" }, 500);
+    }
+  });
+
   // Fallback Route
   app.notFound((c) => c.text(`API path '${c.req.path}' not found`, 404));
 
@@ -421,10 +469,7 @@ async function startServer(options: {
 }
 
 // Export server function to be called by CLI
-function start(options: {
-  silent?: boolean;
-  logFile?: string;
-}) {
+function start(options: { silent?: boolean; logFile?: string }) {
   startServer(options);
 }
 
