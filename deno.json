@@ -7,8 +7,8 @@
   },
   "tasks": {
     "compile": "deno run --allow-env --allow-read --allow-run --allow-write scripts/build.ts",
-    "start": "deno run --allow-env --allow-net --allow-read --allow-sys --allow-write main.ts",
-    "dev": "deno run --allow-env --allow-net --allow-read --allow-sys --allow-write --watch main.ts"
+    "start": "deno run --allow-env --allow-net --allow-read --allow-sys --allow-write --unstable-net main.ts",
+    "dev": "deno run --allow-env --allow-net --allow-read --allow-sys --allow-write --unstable-net --watch main.ts"
   },
   "compilerOptions": {
     "jsx": "precompile",

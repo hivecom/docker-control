@@ -54,6 +54,7 @@ async function build() {
         "--allow-read",
         "--allow-sys",
         "--allow-write",
+        "--unstable-net",
         "-o",
         path.join(Deno.cwd(), "bin", "docker-control"),
         path.join(Deno.cwd(), "main.ts"),

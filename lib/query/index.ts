@@ -28,7 +28,9 @@ export async function queryGameServer(
         };
       }
     }
-  } catch {
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`[query] ${protocol}://${host}:${port} failed: ${message}`);
     return { playerCount: null, maxPlayers: null, map: null };
   }
 }
