@@ -11,7 +11,7 @@ import "@std/dotenv/load"; // Automatically load .env file
 import { middlewareRateLimit } from "./lib/middleware/ratelimit/index.ts";
 import { middlewareAuth } from "./lib/middleware/auth/index.ts";
 import { DockerService } from "./lib/docker/index.ts";
-import { queryGameServer } from "./lib/query/index.ts";
+import { queryGameServer, type QueryProtocol } from "./lib/query/index.ts";
 
 // Custom logger that handles silent mode and file logging
 class Logger {
@@ -403,11 +403,14 @@ async function startServer(options: { silent?: boolean; logFile?: string }) {
     const containerName = c.req.param("container");
 
     const protocol = c.req.query("protocol");
-    if (!protocol || protocol !== "source") {
+    const SUPPORTED_PROTOCOLS = ["source", "minecraft"];
+    if (!protocol || !SUPPORTED_PROTOCOLS.includes(protocol)) {
       return c.json(
         {
           error:
-            "Missing or unsupported 'protocol' query parameter. Supported: source",
+            `Missing or unsupported 'protocol' query parameter. Supported: ${
+              SUPPORTED_PROTOCOLS.join(", ")
+            }`,
         },
         400,
       );
@@ -435,13 +438,12 @@ async function startServer(options: { silent?: boolean; logFile?: string }) {
         );
       }
 
-      const result = await queryGameServer("source", "127.0.0.1", port);
-      return c.json({
-        success: true,
-        playerCount: result.playerCount,
-        maxPlayers: result.maxPlayers,
-        map: result.map,
-      });
+      const result = await queryGameServer(
+        protocol as QueryProtocol,
+        "127.0.0.1",
+        port,
+      );
+      return c.json({ success: true, ...result });
     } catch (err) {
       await logger.error(
         `Error querying game server for container '${containerName}': ${err}`,
