@@ -1,23 +1,12 @@
-import { querySource } from "./protocols/source.ts";
-import { queryMinecraft } from "./protocols/minecraft.ts";
+import { querySource, type SourceQueryResult } from "./protocols/source.ts";
+import {
+  type MinecraftQueryResult,
+  queryMinecraft,
+} from "./protocols/minecraft.ts";
 
 export type QueryProtocol = "source" | "minecraft";
 
-export interface GameServerQueryResult {
-  playerCount: number | null;
-  maxPlayers: number | null;
-  world: string | null;
-  // Minecraft-specific (only present when protocol = 'minecraft')
-  players?: string[];
-  motd?: string;
-  gameType?: string;
-  gameId?: string;
-  version?: string;
-  plugins?: string;
-  hostPort?: number;
-  hostIp?: string;
-  extra?: Record<string, string>;
-}
+export type GameServerQueryResult = SourceQueryResult | MinecraftQueryResult;
 
 /**
  * Query a game server using the specified protocol.
@@ -30,35 +19,28 @@ export async function queryGameServer(
 ): Promise<GameServerQueryResult> {
   try {
     switch (protocol) {
-      case "minecraft": {
-        const result = await queryMinecraft(host, port);
-        return {
-          playerCount: result.playerCount,
-          maxPlayers: result.maxPlayers,
-          world: result.world,
-          players: result.players,
-          motd: result.motd,
-          gameType: result.gameType,
-          gameId: result.gameId,
-          version: result.version,
-          plugins: result.plugins,
-          hostPort: result.hostPort,
-          hostIp: result.hostIp,
-          extra: result.extra,
-        };
-      }
-      case "source": {
-        const result = await querySource(host, port);
-        return {
-          playerCount: result.playerCount,
-          maxPlayers: result.maxPlayers,
-          world: result.map,
-        };
-      }
+      case "source":
+        return await querySource(host, port);
+      case "minecraft":
+        return await queryMinecraft(host, port);
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     console.error(`[query] ${protocol}://${host}:${port} failed: ${message}`);
-    return { playerCount: null, maxPlayers: null, world: null };
+    if (protocol === "source") {
+      return {
+        players: null,
+        maxPlayers: null,
+        map: null,
+        playerList: null,
+      } as unknown as SourceQueryResult;
+    } else {
+      return {
+        numPlayers: null,
+        maxPlayers: null,
+        world: null,
+        players: [],
+      } as unknown as MinecraftQueryResult;
+    }
   }
 }

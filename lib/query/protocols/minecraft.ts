@@ -3,7 +3,7 @@
 
 export interface MinecraftQueryResult {
   // Player counts
-  playerCount: number;
+  numPlayers: number;
   maxPlayers: number;
   players: string[];
   // World
@@ -104,7 +104,7 @@ function parseFullStatResponse(
     kv[key] = value;
   }
 
-  const playerCount = parseInt(kv["numplayers"] ?? "0", 10);
+  const numPlayers = parseInt(kv["numplayers"] ?? "0", 10);
   const maxPlayers = parseInt(kv["maxplayers"] ?? "0", 10);
   const hostPort = parseInt(kv["hostport"] ?? "0", 10);
 
@@ -166,7 +166,7 @@ function parseFullStatResponse(
   }
 
   return {
-    playerCount: isNaN(playerCount) ? 0 : playerCount,
+    numPlayers: isNaN(numPlayers) ? 0 : numPlayers,
     maxPlayers: isNaN(maxPlayers) ? 0 : maxPlayers,
     players,
     world: kv["map"] ?? "",
