@@ -11,7 +11,11 @@ import "@std/dotenv/load"; // Automatically load .env file
 import { middlewareRateLimit } from "./lib/middleware/ratelimit/index.ts";
 import { middlewareAuth } from "./lib/middleware/auth/index.ts";
 import { DockerService } from "./lib/docker/index.ts";
-import { queryGameServer, type QueryProtocol } from "./lib/query/index.ts";
+import {
+  queryGameServer,
+  type QueryOptions,
+  type QueryProtocol,
+} from "./lib/query/index.ts";
 
 // Custom logger that handles silent mode and file logging
 class Logger {
@@ -403,7 +407,13 @@ async function startServer(options: { silent?: boolean; logFile?: string }) {
     const containerName = c.req.param("container");
 
     const protocol = c.req.query("protocol");
-    const SUPPORTED_PROTOCOLS = ["source", "minecraft"];
+    const SUPPORTED_PROTOCOLS = [
+      "source",
+      "minecraft",
+      "gamespy1",
+      "satisfactory",
+      "factorio",
+    ];
     if (!protocol || !SUPPORTED_PROTOCOLS.includes(protocol)) {
       return c.json(
         {
@@ -425,6 +435,23 @@ async function startServer(options: { silent?: boolean; logFile?: string }) {
       return c.json({ error: "'port' must be a valid integer (1-65535)" }, 400);
     }
 
+    // Optional per-request credentials, passed via header (not the URL/query
+    // string) so secrets never land in access logs. The caller (edge function)
+    // owns the secret store; Docker Control uses the value transiently and
+    // never persists it. Expected value: JSON matching `QueryOptions`.
+    let options: QueryOptions = {};
+    const optionsHeader = c.req.header("X-Query-Options");
+    if (optionsHeader) {
+      try {
+        options = JSON.parse(optionsHeader) as QueryOptions;
+      } catch {
+        return c.json(
+          { error: "'X-Query-Options' header must be valid JSON" },
+          400,
+        );
+      }
+    }
+
     try {
       const container = await dockerService.findContainerByName(containerName);
       if (!container) {
@@ -442,6 +469,7 @@ async function startServer(options: { silent?: boolean; logFile?: string }) {
         protocol as QueryProtocol,
         "127.0.0.1",
         port,
+        options,
       );
       return c.json({ success: true, ...result });
     } catch (err) {

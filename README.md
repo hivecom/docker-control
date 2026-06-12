@@ -77,8 +77,34 @@ returns its current player count, max players, and map. The following query
 parameters are required:
 
 - `protocol=<protocol>` - The query protocol to use. Currently supported:
-  - `source` - Source Engine A2S_INFO (TF2, CS2, GMod, L4D2, etc.)
+  - `source` - Source Engine A2S_INFO (TF2, CS2, GMod, L4D2, Rust,
+    Abiotic Factor, etc.)
+  - `minecraft` - Minecraft Query (binary GameSpy/UT3 protocol)
+  - `gamespy1` - Legacy text GameSpy v1 protocol (UT99, UT2004). Use the
+    server's query port (UT99: game port + 1).
+  - `satisfactory` - Satisfactory Lightweight Query API (UDP, default port
+    7777). Reports run state and server name only; player counts are not
+    available over this protocol (they require the authenticated HTTPS API).
+  - `factorio` - Factorio via Source RCON (TCP). Requires the server's RCON
+    password (see `X-Query-Options` below) and the configured RCON port
+    (`--rcon-port`), not the game port. By default reports only the online
+    player count; set `factorioUseLua` to also fetch player names and the
+    max-player limit.
 - `port=<number>` - The host-mapped port to query (e.g., `?port=27015`)
+
+An optional `X-Query-Options` request header may carry a JSON object with
+per-request credentials for protocols that need them. Secrets are passed via
+this header rather than the query string so they never appear in access logs,
+and Docker Control uses them transiently without persisting them. Supported
+fields:
+
+- `rconPassword` - RCON password (used by `factorio`).
+- `authToken` - Bearer token (reserved for the Satisfactory HTTPS API).
+- `factorioUseLua` - `factorio` only: when `true`, run a `/silent-command` to
+  also return player names and the max-player limit. This disables achievements
+  on the save, so it is opt-in.
+
+Example: `X-Query-Options: {"rconPassword":"...","factorioUseLua":true}`.
 
 Example response:
 
