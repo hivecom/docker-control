@@ -77,8 +77,8 @@ returns its current player count, max players, and map. The following query
 parameters are required:
 
 - `protocol=<protocol>` - The query protocol to use. Currently supported:
-  - `source` - Source Engine A2S_INFO (TF2, CS2, GMod, L4D2, Rust,
-    Abiotic Factor, etc.)
+  - `source` - Source Engine A2S_INFO (TF2, CS2, GMod, L4D2, Rust, Abiotic
+    Factor, etc.)
   - `minecraft` - Minecraft Query (binary GameSpy/UT3 protocol)
   - `gamespy1` - Legacy text GameSpy v1 protocol (UT99, UT2004). Use the
     server's query port (UT99: game port + 1).
