@@ -413,6 +413,7 @@ async function startServer(options: { silent?: boolean; logFile?: string }) {
       "gamespy1",
       "satisfactory",
       "factorio",
+      "trackmania",
     ];
     if (!protocol || !SUPPORTED_PROTOCOLS.includes(protocol)) {
       return c.json(

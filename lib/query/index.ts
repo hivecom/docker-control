@@ -9,20 +9,26 @@ import {
   type SatisfactoryQueryResult,
 } from "./protocols/satisfactory.ts";
 import { type FactorioQueryResult, queryFactorio } from "./protocols/rcon.ts";
+import {
+  queryTrackmania,
+  type TrackmaniaQueryResult,
+} from "./protocols/gbxremote.ts";
 
 export type QueryProtocol =
   | "source"
   | "minecraft"
   | "gamespy1"
   | "satisfactory"
-  | "factorio";
+  | "factorio"
+  | "trackmania";
 
 export type GameServerQueryResult =
   | SourceQueryResult
   | MinecraftQueryResult
   | GameSpyQueryResult
   | SatisfactoryQueryResult
-  | FactorioQueryResult;
+  | FactorioQueryResult
+  | TrackmaniaQueryResult;
 
 /**
  * Optional, per-request credentials/configuration injected by the caller.
@@ -41,6 +47,9 @@ export interface QueryOptions {
   // Factorio only: use a `/silent-command` to also fetch player names and the
   // max-player limit. Disables achievements on the save, so it is opt-in.
   factorioUseLua?: boolean;
+  // Trackmania only: the dedicated server's User level password, used to log
+  // in over GBXRemote (XML-RPC).
+  userPassword?: string;
 }
 
 /**
@@ -87,6 +96,16 @@ function emptyResult(protocol: QueryProtocol): GameServerQueryResult {
         maxPlayers: null,
         players: [],
       } as unknown as FactorioQueryResult;
+    case "trackmania":
+      return {
+        numPlayers: null,
+        maxPlayers: null,
+        map: null,
+        hostName: null,
+        gameType: null,
+        players: [],
+        extra: {},
+      } as unknown as TrackmaniaQueryResult;
   }
 }
 
@@ -120,6 +139,8 @@ export async function queryGameServer(
           options.rconPassword,
           options.factorioUseLua,
         );
+      case "trackmania":
+        return await queryTrackmania(host, port, options.userPassword);
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);

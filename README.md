@@ -90,6 +90,10 @@ parameters are required:
     (`--rcon-port`), not the game port. By default reports only the online
     player count; set `factorioUseLua` to also fetch player names and the
     max-player limit.
+  - `trackmania` - TrackMania Forever via GBXRemote (XML-RPC over TCP, default
+    port 5000). Requires the server's User level password (see `X-Query-Options`
+    below). Reports players with their best time on the current track, max
+    players, track name and game mode.
 - `port=<number>` - The host-mapped port to query (e.g., `?port=27015`)
 
 An optional `X-Query-Options` request header may carry a JSON object with
@@ -103,6 +107,8 @@ fields:
 - `factorioUseLua` - `factorio` only: when `true`, run a `/silent-command` to
   also return player names and the max-player limit. This disables achievements
   on the save, so it is opt-in.
+- `userPassword` - `trackmania` only: the dedicated server's User level password
+  from `dedicated_cfg.txt`.
 
 Example: `X-Query-Options: {"rconPassword":"...","factorioUseLua":true}`.
 
